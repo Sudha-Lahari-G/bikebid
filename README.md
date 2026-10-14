@@ -2,7 +2,7 @@
 
 A production-grade, real-time auction platform for pre-owned motorcycles. Registered users bid in live auctions that run simultaneously; every accepted bid is pushed to every watcher instantly, auctions open and close themselves on schedule, and late bids extend the clock so nobody wins by sniping.
 
-**Live demo:** _frontend URL_ · **API docs:** _backend URL_/docs
+**Live demo:** https://bikebid.vercel.app · **API docs:** https://bikebid-api.onrender.com/docs
 _(The free API host sleeps when idle — the first request can take ~30–60 s to wake it.)_
 
 > Try it without signing up: on the sign-in page click **"Try the demo bidder account"**. Demo mode keeps several auctions live at all times, with a few bot bidders so you can watch prices move and get outbid.
