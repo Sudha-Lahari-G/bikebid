@@ -1,0 +1,77 @@
+# Local development: `docker compose up --build`
+#   API + Swagger  http://localhost:8000/docs
+#   Frontend       http://localhost:5173   (run `npm run dev` in ./frontend, or the `web` service)
+# The credentials below are for local development only.
+
+services:
+  db:
+    image: postgres:16
+    container_name: bike-auction-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bike_auction
+      POSTGRES_USER: bike_user
+      POSTGRES_PASSWORD: local_dev_password_change_me
+    ports:
+      - "5433:5432"
+    volumes:
+      - bike_auction_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bike_user -d bike_auction"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: bike-auction-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      target: dev
+    container_name: bike-auction-api
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: local
+      DATABASE_URL: postgresql+psycopg://bike_user:local_dev_password_change_me@db:5432/bike_auction
+      TEST_DATABASE_URL: postgresql+psycopg://bike_user:local_dev_password_change_me@db:5432/bike_auction_test
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: local-dev-secret-not-for-production-use-only
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      LOG_JSON: "false"
+      ADMIN_EMAIL: admin@bikebid.dev
+      ADMIN_PASSWORD: BikeBid@123
+      DEMO_MODE: "true"
+      DEMO_USER_PASSWORD: BikeBid@123
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    container_name: bike-auction-web
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+    profiles: ["web"]
+
+volumes:
+  bike_auction_data:
