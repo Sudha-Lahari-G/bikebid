@@ -38,6 +38,11 @@ async def list_auctions(
     )
 
 
+@router.get("/auctions/{auction_id}", response_model=AdminAuctionOut, summary="One auction, including reserve")
+async def get_auction(auction_id: int, _: AdminUser, session: SessionDep) -> AdminAuctionOut:
+    return AdminAuctionOut.from_model(await auction_service.get_auction(session, auction_id))
+
+
 @router.post(
     "/auctions",
     response_model=AdminAuctionOut,

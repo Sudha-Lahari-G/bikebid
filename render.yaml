@@ -1,0 +1,35 @@
+# Render Blueprint — deploys the API on the free plan.
+# Render dashboard → New → Blueprint → pick this repo. Fill in the `sync: false` values when prompted.
+services:
+  - type: web
+    name: bikebid-api
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health/live
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_JSON
+        value: "true"
+      - key: DATABASE_URL # Neon connection string (direct, not "-pooler")
+        sync: false
+      - key: REDIS_URL # Upstash rediss:// URL (optional)
+        sync: false
+      - key: CORS_ORIGINS # your Vercel URL, e.g. https://bikebid.vercel.app
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: METRICS_TOKEN
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_USER_PASSWORD
+        sync: false

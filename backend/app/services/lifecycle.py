@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 # Arbitrary constant: only one instance at a time performs demo upkeep.
 _DEMO_LOCK_ID = 7_310_442
+_DEMO_MIN_LIVE = 4
 
 
 async def advance_lifecycle(session: AsyncSession, now=None) -> tuple[list[int], list[int]]:
@@ -155,14 +156,17 @@ class AuctionScheduler:
                     ).all()
                 )
 
-        if active < self._settings.demo_min_active_auctions:
-            await self._create_demo_auction(live_now=len(live) < 3)
+        # Always keep a few auctions live (something to bid on) and a few upcoming.
+        if len(live) < _DEMO_MIN_LIVE:
+            await self._create_demo_auction(live_now=True)
+        elif active < self._settings.demo_min_active_auctions:
+            await self._create_demo_auction(live_now=False)
 
         now = utcnow()
         interval = self._settings.scheduler_interval_seconds
         for auction_id, ends_at, price, starting, reserve in live:
             remaining = (ends_at - now).total_seconds()
-            mean_gap = 12 if remaining < 150 else 45  # bids cluster near the end, like real auctions
+            mean_gap = 20 if remaining < 150 else 90  # bids cluster near the end, like real auctions
             ceiling = (reserve or starting * 1.5) * 1.12
             if price < ceiling and self._rng.random() < interval / mean_gap:
                 await self._bot_bid(auction_id)
