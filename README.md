@@ -345,7 +345,11 @@ Everything below fits in free tiers ($0). Push the repository to GitHub first.
    - `ADMIN_EMAIL` and `ADMIN_PASSWORD`: your admin login
    - `DEMO_USER_PASSWORD`: e.g. `BikeBid@123`
    - `JWT_SECRET` and `METRICS_TOKEN` are generated for you.
-3. Deploy. Migrations run on start. Then, once, open the service's **Shell** and run `python -m app.seed` to load the dataset.
+3. Deploy. Migrations run on start. Then load the dataset once from your own machine, pointing the seed script at Neon:
+   ```bash
+   docker compose run --rm --no-deps -e DATABASE_URL="<your Neon URL>" api python -m app.seed
+   ```
+   This step is optional: with `DEMO_MODE=true` the site lists auctions by itself. The seed adds past results and bid history.
 4. Check `https://<service>.onrender.com/health/ready`.
 
 **4. Frontend: [Vercel](https://vercel.com)**
